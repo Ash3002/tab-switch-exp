@@ -1,9 +1,9 @@
 {
   "version": 2,
   "builds": [
-    { "src": "tab-switch-counter/index.html", "use": "@vercel/static" }
+    { "src": "tab-switch-counter", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/tab-switch-counter/index.html" }
+    { "src": "/(.*)", "dest": "/tab-switch-counter" }
   ]
 }
