@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tab Visibility Detector with Counter</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+    #status {
+      font-size: 2rem;
+      font-weight: bold;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1rem;
+    }
+    #counter {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .active {
+      color: #2e7d32;
+    }
+    .inactive {
+      color: #c62828;
+    }
+  </style>
+</head>
+<body>
+  <div id="status" class="active">Tab is Active</div>
+  <div id="counter">Switches: 0</div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const counterEl = document.getElementById('counter');
+    let switchCount = 0;
+
+    function updateStatus() {
+      if (document.hidden) {
+        statusEl.textContent = 'Tab is Inactive';
+        statusEl.classList.remove('active');
+        statusEl.classList.add('inactive');
+      } else {
+        statusEl.textContent = 'Tab is Active';
+        statusEl.classList.remove('inactive');
+        statusEl.classList.add('active');
+      }
+    }
+
+    function updateCounter() {
+      counterEl.textContent = `Switches: ${switchCount}`;
+    }
+
+    // Increment counter on each visibility change (tab switch)
+    document.addEventListener('visibilitychange', () => {
+      switchCount++;
+      updateCounter();
+      updateStatus();
+    });
+
+    // Also update status on focus/blur (optional)
+    window.addEventListener('focus', updateStatus);
+    window.addEventListener('blur', updateStatus);
+
+    // Initialize
+    updateStatus();
+    updateCounter();
+  </script>
+</body>
+</html>
