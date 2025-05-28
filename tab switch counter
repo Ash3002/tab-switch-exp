@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tab Visibility Detector with Counter</title>
+  <title>Tab Visibility Detector with Counter & Timer</title>
   <style>
     body {
       display: flex;
@@ -25,9 +25,16 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       margin-bottom: 1rem;
     }
-    #counter {
+    #counter,
+    #inactiveTime {
       font-size: 1.5rem;
       font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    #audioStatus {
+      font-size: 1rem;
+      margin-top: 1rem;
+      color: #555;
     }
     .active {
       color: #2e7d32;
@@ -40,21 +47,30 @@
 <body>
   <div id="status" class="active">Tab is Active</div>
   <div id="counter">Switches: 0</div>
+  <div id="inactiveTime">Inactive time: 0s</div>
+  <div id="audioStatus">Checking audio URL...</div>
+
+  <!-- Using YouTube Music URL; may not play directly in <audio> -->
+  <audio id="backgroundAudio" src="https://music.youtube.com/watch?v=TiLmcrT7_H8&list=OLAK5uy_kEeXdAS3MSRKbK3rx2GWhVjL-rtYpHhrk" loop></audio>
 
   <script>
     const statusEl = document.getElementById('status');
     const counterEl = document.getElementById('counter');
+    const inactiveTimeEl = document.getElementById('inactiveTime');
+    const audioStatusEl = document.getElementById('audioStatus');
+    const audio = document.getElementById('backgroundAudio');
+
     let switchCount = 0;
+    let totalInactive = 0;      // in milliseconds
+    let hiddenStart = null;     // timestamp when tab became hidden
 
     function updateStatus() {
       if (document.hidden) {
         statusEl.textContent = 'Tab is Inactive';
-        statusEl.classList.remove('active');
-        statusEl.classList.add('inactive');
+        statusEl.classList.replace('active','inactive');
       } else {
         statusEl.textContent = 'Tab is Active';
-        statusEl.classList.remove('inactive');
-        statusEl.classList.add('active');
+        statusEl.classList.replace('inactive','active');
       }
     }
 
@@ -62,20 +78,47 @@
       counterEl.textContent = `Switches: ${switchCount}`;
     }
 
-    // Increment counter on each visibility change (tab switch)
+    function updateInactiveTime() {
+      const seconds = Math.floor(totalInactive / 1000);
+      inactiveTimeEl.textContent = `Inactive time: ${seconds}s`;
+    }
+
+    // Check if audio URL is playable
+    audio.addEventListener('canplay', () => {
+      audioStatusEl.textContent = 'Audio URL is valid and can play.';
+    });
+    audio.addEventListener('error', () => {
+      audioStatusEl.textContent = 'Audio URL could not be loaded/playback not supported.';
+    });
+    // attempt to load metadata to trigger canplay/error
+    audio.load();
+
     document.addEventListener('visibilitychange', () => {
       switchCount++;
       updateCounter();
+
+      if (document.hidden) {
+        hiddenStart = Date.now();
+        audio.play().catch(() => console.warn('Audio autoplay prevented'));
+      } else {
+        if (hiddenStart) {
+          totalInactive += Date.now() - hiddenStart;
+          hiddenStart = null;
+        }
+        audio.pause();
+        audio.currentTime = 0;
+        updateInactiveTime();
+      }
       updateStatus();
     });
 
-    // Also update status on focus/blur (optional)
     window.addEventListener('focus', updateStatus);
     window.addEventListener('blur', updateStatus);
 
     // Initialize
     updateStatus();
     updateCounter();
+    updateInactiveTime();
   </script>
 </body>
 </html>
